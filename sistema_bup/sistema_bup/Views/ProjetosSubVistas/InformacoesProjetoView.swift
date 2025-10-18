@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 // MARK: - Informações do Projeto View
 struct InformacoesProjetoView: View {
@@ -37,11 +38,17 @@ struct InformacoesProjetoView: View {
                 .bold()
                 .padding(.top)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            
-            
-            //TODO: - Mapa
-            
-            
+
+
+            // Mapa do Terreno
+            TerrainMapView(
+                latitude: projeto.latitude,
+                longitude: projeto.longitude,
+                endereco: projeto.endereco
+            )
+            .padding(.vertical, 8)
+
+
             GroupBox{
                 let areaTerrenoStr = projeto.areaTerreno.map { String(format: "%.2f m²", $0) } ?? "-"
                 MyLabel(imagem: "number", color: .blue, dado: areaTerrenoStr)
