@@ -14,6 +14,14 @@ struct InformacoesProjetoView: View {
 
     var body: some View {
         VStack{
+            
+            Text("Informação de projeto")
+                .font(.title3)
+                .bold()
+                .padding(.top)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            
             GroupBox{
                 MyLabel(imagem: "building", color: .blue, dado: projeto.nomeProjeto)
                 Divider()
