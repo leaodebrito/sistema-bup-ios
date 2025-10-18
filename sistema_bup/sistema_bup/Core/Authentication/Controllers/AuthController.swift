@@ -16,15 +16,13 @@ class AuthController: ObservableObject {
     private let authService = AuthService.shared
 
     init() {
-        // Força logout na inicialização para garantir que sempre inicie no login
-        try? authService.signOut()
+        // Verifica se já existe uma sessão ativa do Firebase
         checkAuthStatus()
     }
 
     func checkAuthStatus() {
         currentUser = authService.currentUser
         isAuthenticated = authService.isAuthenticated
-        print("🔐 Auth Status - isAuthenticated: \(isAuthenticated), currentUser: \(currentUser?.email ?? "none")")
     }
 
     func signIn(email: String, password: String) async throws {
