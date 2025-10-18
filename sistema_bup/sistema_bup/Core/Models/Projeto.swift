@@ -25,12 +25,15 @@ struct Projeto: Identifiable, Codable {
     let areaTerreno: Double?
     let caBase: Double?
     let caMax: Double?
-    let caMin: String?
-    let io: String?
-    let ip: String?
-    let latitude: String?
-    let longitude: String?
+    let caMin: Double?
+    let io: Double?
+    let ip: Double?
+    let latitude: Double?
+    let longitude: Double?
     let zonaUrbanistica: String?
+    let recuo_frontal: Double?
+    let recuo_lateral: Double?
+    let recuo_fundos: Double?
 
     enum CodingKeys: String, CodingKey {
         case informacaoProjeto = "informacao_projeto"
@@ -57,12 +60,15 @@ struct Projeto: Identifiable, Codable {
         areaTerreno = try? infoContainer.decode(Double.self, forKey: .areaTerreno)
         caBase = try? infoContainer.decode(Double.self, forKey: .caBase)
         caMax = try? infoContainer.decode(Double.self, forKey: .caMax)
-        caMin = try? infoContainer.decode(String.self, forKey: .caMin)
-        io = try? infoContainer.decode(String.self, forKey: .io)
-        ip = try? infoContainer.decode(String.self, forKey: .ip)
-        latitude = try? infoContainer.decode(String.self, forKey: .latitude)
-        longitude = try? infoContainer.decode(String.self, forKey: .longitude)
+        caMin = try? infoContainer.decodeFlexibleDouble(forKey: .caMin)
+        io = try? infoContainer.decodeFlexibleDouble(forKey: .io)
+        ip = try? infoContainer.decodeFlexibleDouble(forKey: .ip)
+        latitude = try? infoContainer.decodeFlexibleDouble(forKey: .latitude)
+        longitude = try? infoContainer.decodeFlexibleDouble(forKey: .longitude)
         zonaUrbanistica = try? infoContainer.decode(String.self, forKey: .zonaUrbanistica)
+        recuo_frontal = try? infoContainer.decodeFlexibleDouble(forKey: .recuo_frontal)
+        recuo_lateral = try? infoContainer.decodeFlexibleDouble(forKey: .recuo_lateral)
+        recuo_fundos = try? infoContainer.decodeFlexibleDouble(forKey: .recuo_fundos)
 
         // O ID será definido pelo FirestoreService após decodificação
         id = nil
@@ -109,6 +115,24 @@ struct Projeto: Identifiable, Codable {
     }
 }
 
+private extension KeyedDecodingContainer {
+    func decodeFlexibleDouble(forKey key: Key) throws -> Double? {
+        // Try decoding as Double directly
+        if let value = try? self.decode(Double.self, forKey: key) {
+            return value
+        }
+        // Try decoding as String and convert
+        if let stringValue = try? self.decode(String.self, forKey: key) {
+            return Double(stringValue.replacingOccurrences(of: ",", with: "."))
+        }
+        // Try decoding as Int and convert
+        if let intValue = try? self.decode(Int.self, forKey: key) {
+            return Double(intValue)
+        }
+        return nil
+    }
+}
+
 // MARK: - Info Projeto Keys (para decodificação aninhada)
 private enum InfoProjetoKeys: String, CodingKey {
     case nomeProjeto = "nome_projeto"
@@ -129,6 +153,9 @@ private enum InfoProjetoKeys: String, CodingKey {
     case latitude
     case longitude
     case zonaUrbanistica = "zona_urbanistica"
+    case recuo_frontal
+    case recuo_lateral
+    case recuo_fundos
 }
 
 // MARK: - Info Criação
@@ -331,3 +358,4 @@ struct SolucaoViavel: Codable {
         case lucroIncorporacao = "lucro_incorporacao"
     }
 }
+

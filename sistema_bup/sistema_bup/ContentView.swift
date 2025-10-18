@@ -10,10 +10,10 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         TabView{
-            Inicio()
-                .tabItem{Label("Inicio", systemImage: "list.bullet")}
             Projetos()
-                .tabItem{Label("Projetos", systemImage: "building.2" )}
+            .tabItem{Label("Projetos", systemImage: "building.2" )}
+            Inicio()
+                .tabItem{Label("B.UP", systemImage: "list.bullet")}
             Assistente()
                 .tabItem{Label("Assistente", systemImage: "apple.intelligence")}
             
