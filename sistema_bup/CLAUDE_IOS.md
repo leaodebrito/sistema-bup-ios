@@ -5,7 +5,35 @@
 
 **BuidUp Mobile** é a versão nativa iOS do sistema de análise de mercado imobiliário e estudos de viabilidade de projetos. O aplicativo mantém a mesma lógica de negócio do sistema web, adaptada para a experiência mobile com interface SwiftUI.
 
-## 🏗️ Arquitetura Proposta
+---
+
+## ✅ Status Atual da Implementação
+
+### Implementado:
+- ✅ **Autenticação Firebase** (Login com Email/Senha)
+  - `AuthController` (MVC Controller)
+  - `AuthService` (Firebase Auth Service)
+  - `LoginView` (Tela de login)
+- ✅ **Navegação Principal**
+  - `ContentView` com TabView (3 abas: Início, Projetos, Assistente)
+  - `Inicio.swift` - Tela inicial com cards de funcionalidades
+  - `Usuario.swift` - Tela de perfil do usuário com informações do Firebase Auth
+- ✅ **Fluxo de Autenticação**
+  - Redirect automático: Login → ContentView
+  - Logout volta para LoginView
+  - Persistência de sessão Firebase
+
+### Pendente:
+- ⏳ Tela de Projetos (funcionalidade completa)
+- ⏳ Tela de Assistente IA
+- ⏳ Integração com Firestore (modelos e serviços)
+- ⏳ Análise de Mercado
+- ⏳ Análise de Terreno
+- ⏳ Análise de Viabilidade
+
+---
+
+## 🏗️ Arquitetura Implementada
 
 ### Stack Tecnológica iOS
 
@@ -29,75 +57,42 @@
 - **Codable**: Serialização JSON
 
 **Arquitetura:**
-- **MVVM (Model-View-ViewModel)**: Separação de responsabilidades
-- **Repository Pattern**: Abstração de dados (Firebase + APIs)
-- **Dependency Injection**: Gerenciamento de dependências
+- **MVC (Model-View-Controller)**: Separação de responsabilidades
+- **Service Pattern**: Abstração de dados (Firebase + APIs)
+- **Dependency Injection**: Gerenciamento via @EnvironmentObject
 
 ---
 
-## 📂 Estrutura de Pastas Proposta
+## 📂 Estrutura Atual do Projeto
 
 ```
-BuidUpMobile/
-├── App/
-│   ├── BuidUpMobileApp.swift          # Entry point
-│   └── AppDelegate.swift              # Firebase setup
+sistema_bup/
+├── sistema_bupApp.swift               # Entry point com AppDelegate
+├── ContentView.swift                  # TabView principal (Inicio, Projetos, Assistente)
 │
 ├── Core/                              # Funcionalidades compartilhadas
 │   ├── Authentication/
-│   │   ├── Views/
-│   │   │   ├── LoginView.swift
-│   │   │   └── RegisterView.swift
-│   │   ├── ViewModels/
-│   │   │   └── AuthViewModel.swift
-│   │   └── Services/
-│   │       └── AuthService.swift
+│   │   ├── Controllers/
+│   │   │   └── AuthController.swift   # Controller de autenticação (MVC)
+│   │   ├── Services/
+│   │   │   └── AuthService.swift      # Serviço Firebase Auth
+│   │   └── Views/
+│   │       └── LoginView.swift        # Tela de login
 │   │
-│   ├── Network/
-│   │   ├── APIService.swift           # Consume backend
-│   │   ├── NetworkError.swift
-│   │   └── Endpoints.swift
+│   ├── Models/                        # Modelos de dados
+│   │   └── (vazio - modelos serão adicionados)
 │   │
-│   ├── Firebase/
-│   │   ├── FirestoreService.swift     # CRUD Firestore
-│   │   ├── FirebaseManager.swift
-│   │   └── Models/
-│   │       ├── Projeto.swift
-│   │       ├── AnaliseMercado.swift
-│   │       ├── AnaliseTerreno.swift
-│   │       └── AnaliseViabilidade.swift
+│   ├── Services/                      # Serviços compartilhados
+│   │   └── (vazio - serviços serão adicionados)
 │   │
-│   └── Extensions/
-│       ├── Double+Extensions.swift     # Formatação R$, m², %
-│       ├── Date+Extensions.swift
-│       └── Color+Extensions.swift
+│   └── Extensions/                    # Extensões úteis
+│       └── (vazio - extensões serão adicionadas)
 │
-├── Features/                          # Módulos por funcionalidade
-│   ├── Home/
-│   │   ├── Views/
-│   │   │   └── HomeView.swift
-│   │   └── ViewModels/
-│   │       └── HomeViewModel.swift
-│   │
-│   ├── Projects/
-│   │   ├── Views/
-│   │   │   ├── ProjectsListView.swift
-│   │   │   ├── ProjectDetailView.swift
-│   │   │   └── CreateProjectView.swift
-│   │   └── ViewModels/
-│   │       └── ProjectsViewModel.swift
-│   │
-│   ├── MarketAnalysis/                # Análise de Mercado
-│   │   ├── Views/
-│   │   │   ├── MarketAnalysisView.swift
-│   │   │   ├── PriceMapView.swift
-│   │   │   ├── PropertyStatsView.swift
-│   │   │   └── PricePredictionView.swift
-│   │   ├── ViewModels/
-│   │   │   └── MarketAnalysisViewModel.swift
-│   │   └── Components/
-│   │       ├── PriceChartView.swift
-│   │       └── StatCardView.swift
+└── Views/                             # Views principais (estrutura atual)
+    ├── Inicio.swift                   # Tela inicial com cards de funcionalidades
+    ├── Projetos.swift                 # Tela de projetos (placeholder)
+    ├── Usuario.swift                  # Tela de perfil do usuário
+    └── Assistente.swift               # Tela do assistente IA (placeholder)
 │   │
 │   ├── LandAnalysis/                  # Análise de Terreno
 │   │   ├── Views/
@@ -204,26 +199,39 @@ https://github.com/Alamofire/Alamofire
 - Bundle ID: `com.buildup.mobile`
 - Download `GoogleService-Info.plist`
 
-**Passo 2:** Configurar AppDelegate
+**Passo 2:** Configurar AppDelegate (IMPLEMENTADO)
 
 ```swift
-// BuidUpMobileApp.swift
+// sistema_bupApp.swift
 import SwiftUI
+import Firebase
 import FirebaseCore
+import FirebaseAuth
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+  func application(_ application: UIApplication,
+                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    FirebaseApp.configure()
+    return true
+  }
+}
 
 @main
-struct BuidUpMobileApp: App {
+struct YourApp: App {
+  @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+  @StateObject private var authController = AuthController()
 
-    init() {
-        FirebaseApp.configure()
+  var body: some Scene {
+    WindowGroup {
+      if authController.isAuthenticated {
+        ContentView()
+          .environmentObject(authController)
+      } else {
+        LoginView()
+          .environmentObject(authController)
+      }
     }
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environmentObject(AuthViewModel())
-        }
-    }
+  }
 }
 ```
 
