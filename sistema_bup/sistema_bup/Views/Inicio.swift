@@ -51,12 +51,19 @@ struct Inicio: View {
                                 icon: "building.2.fill",
                                 url: "https://leaodebrito.github.io/site-buildup/index.html"
                             )
+                            
+                            LinkButton(
+                                title: "Site Avalimob",
+                                icon: "doc.text.fill",
+                                url: "https://avalimob-app.com"
+                            )
 
                             LinkButton(
                                 title: "Site Norma",
                                 icon: "doc.text.fill",
                                 url: "https://leaodebrito.github.io/Norma-frontend-2/"
                             )
+                            
                         }
                         .padding(.horizontal)
                     }
