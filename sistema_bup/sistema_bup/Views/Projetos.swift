@@ -31,9 +31,26 @@ struct Projetos: View {
                     )
                 } else if controller.projetos.isEmpty {
                     EmptyProjectsView()
+                } else if controller.projetosFiltrados.isEmpty {
+                    // Mostra mensagem quando a busca não retorna resultados
+                    VStack(spacing: 16) {
+                        Image(systemName: "magnifyingglass")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(.gray)
+
+                        Text("Nenhum projeto encontrado")
+                            .font(.headline)
+
+                        Text("Tente buscar por outro termo")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
                 } else {
                     List {
-                        ForEach(controller.projetos) { projeto in
+                        ForEach(controller.projetosFiltrados) { projeto in
                             NavigationLink {
                                 ProjetoDetailView(projeto: projeto)
                             } label: {
@@ -42,7 +59,7 @@ struct Projetos: View {
                         }
                         .onDelete { indexSet in
                             for index in indexSet {
-                                let projeto = controller.projetos[index]
+                                let projeto = controller.projetosFiltrados[index]
                                 Task {
                                     await controller.deleteProjeto(projeto)
                                 }
@@ -57,6 +74,11 @@ struct Projetos: View {
             }
             .navigationTitle("Projetos")
             .navigationBarTitleDisplayMode(.large)
+            .searchable(
+                text: $controller.searchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: "Buscar por nome, cliente ou localização"
+            )
             .task {
                 print("📱 Projetos View: .task chamado")
                 await controller.loadProjetos()
@@ -179,61 +201,7 @@ struct ErrorStateView: View {
     }
 }
 
-// MARK: - Projeto Detail View
-struct ProjetoDetailView: View {
-    let projeto: Projeto
 
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Informações do Projeto
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Informações do Projeto")
-                        .font(.headline)
-                        .fontWeight(.bold)
-
-                    DetailRow(label: "Nome", value: projeto.nomeProjeto)
-                    DetailRow(label: "Tipo", value: projeto.tipoProjeto)
-                    DetailRow(label: "Cliente", value: projeto.nomeCliente)
-                    DetailRow(label: "Endereço", value: projeto.endereco)
-                    DetailRow(label: "Data Início", value: projeto.dataInicio)
-                    DetailRow(label: "Descrição", value: projeto.descriProjeto)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-
-                // Análises Disponíveis
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Análises")
-                        .font(.headline)
-                        .fontWeight(.bold)
-
-                }
-                .padding()
-            }
-            .padding()
-        }
-        .navigationTitle("Detalhes")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-struct DetailRow: View {
-    let label: String
-    let value: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Text(value)
-                .font(.body)
-        }
-    }
-}
 
 struct AnalysisCard: View {
     let icon: String

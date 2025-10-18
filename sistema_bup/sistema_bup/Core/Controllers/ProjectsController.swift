@@ -13,8 +13,23 @@ class ProjectsController: ObservableObject {
     @Published var projetos: [Projeto] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var searchText = ""
 
     private let firestoreService = FirestoreService.shared
+
+    // Projetos filtrados com base na busca
+    var projetosFiltrados: [Projeto] {
+        if searchText.isEmpty {
+            return projetos
+        }
+
+        let searchLower = searchText.lowercased()
+        return projetos.filter { projeto in
+            projeto.nomeProjeto.lowercased().contains(searchLower) ||
+            projeto.nomeCliente.lowercased().contains(searchLower) ||
+            projeto.endereco.lowercased().contains(searchLower)
+        }
+    }
 
     func loadProjetos() async {
         print("🚀 ProjectsController: Iniciando carregamento de projetos")
