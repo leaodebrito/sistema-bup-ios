@@ -329,21 +329,19 @@ struct TerrainMapView: View {
 
             VStack(spacing: 8) {
                 // Quantidade de terrenos
-                if let quantidade = dados.quantidadeTerrenos {
-                    HStack {
-                        Text("Terrenos Analisados:")
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(quantidade)")
-                            .fontWeight(.semibold)
-                    }
+                HStack {
+                    Text("Terrenos Analisados:")
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(dados.count)")
+                        .fontWeight(.semibold)
                 }
 
                 // Lista de terrenos (primeiros 3)
-                if let terrenos = dados.terrenosAnalisados?.prefix(3), !terrenos.isEmpty {
+                if !dados.isEmpty {
                     Divider()
 
-                    ForEach(Array(terrenos.enumerated()), id: \.offset) { index, terreno in
+                    ForEach(Array(dados.prefix(3).enumerated()), id: \.offset) { index, terreno in
                         VStack(alignment: .leading, spacing: 4) {
                             if let endereco = terreno.endereco {
                                 Text(endereco)
@@ -369,14 +367,14 @@ struct TerrainMapView: View {
                             }
                         }
 
-                        if index < terrenos.count - 1 {
+                        if index < 2 {
                             Divider()
                         }
                     }
 
                     // Indicador de mais terrenos
-                    if let total = dados.terrenosAnalisados?.count, total > 3 {
-                        Text("+ \(total - 3) terreno(s)")
+                    if dados.count > 3 {
+                        Text("+ \(dados.count - 3) terreno(s)")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                             .italic()

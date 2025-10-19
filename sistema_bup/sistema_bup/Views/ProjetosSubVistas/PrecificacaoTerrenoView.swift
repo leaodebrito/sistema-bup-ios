@@ -33,7 +33,7 @@ struct PrecificacaoTerrenoView: View {
                         precificacaoCard(analise: analise)
 
                         // Dados da Amostra
-                        if let dadosAmostra = analise.dadosAmostra {
+                        if let dadosAmostra = analise.dadosAmostra, !dadosAmostra.isEmpty {
                             dadosAmostraCard(dados: dadosAmostra)
                         }
 
@@ -294,31 +294,27 @@ struct PrecificacaoTerrenoView: View {
 
             VStack(spacing: 8) {
                 // Quantidade de terrenos
-                if let quantidade = dados.quantidadeTerrenos {
-                    HStack {
-                        Text("Terrenos Comparáveis Analisados:")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(quantidade)")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.blue)
-                    }
+                HStack {
+                    Text("Terrenos Comparáveis Analisados:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(dados.count)")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.blue)
                 }
 
                 // Lista de terrenos
-                if let terrenos = dados.terrenosAnalisados, !terrenos.isEmpty {
-                    Divider()
-                        .padding(.vertical, 4)
+                Divider()
+                    .padding(.vertical, 4)
 
-                    VStack(spacing: 12) {
-                        ForEach(Array(terrenos.enumerated()), id: \.offset) { index, terreno in
-                            terrenoRow(terreno: terreno, numero: index + 1)
+                VStack(spacing: 12) {
+                    ForEach(Array(dados.enumerated()), id: \.offset) { index, terreno in
+                        terrenoRow(terreno: terreno, numero: index + 1)
 
-                            if index < terrenos.count - 1 {
-                                Divider()
-                            }
+                        if index < dados.count - 1 {
+                            Divider()
                         }
                     }
                 }
@@ -703,7 +699,36 @@ struct PrecificacaoTerrenoView: View {
         do {
             analiseTerreno = try await AnalysisService.shared.getAnaliseTerreno(projetoId: projetoId)
 
-            if analiseTerreno == nil {
+            if let analise = analiseTerreno {
+                print("✅ Análise carregada com sucesso!")
+                print("📊 Versão: \(analise.versao)")
+                print("📊 Status: \(analise.status)")
+
+                // Debug precificação
+                print("\n💰 PRECIFICAÇÃO:")
+                print("  - precoAdotado: \(analise.precificacaoTerreno.precoAdotado ?? 0)")
+                print("  - precoUnitarioAdotado: \(analise.precificacaoTerreno.precoUnitarioAdotado ?? 0)")
+                print("  - precoTotalCalculado: \(analise.precificacaoTerreno.precoTotalCalculado ?? 0)")
+                print("  - valorTotalEstimado (computed): \(analise.precificacaoTerreno.valorTotalEstimado ?? 0)")
+                print("  - valorM2Estimado (computed): \(analise.precificacaoTerreno.valorM2Estimado ?? 0)")
+                print("  - faixaValores: \(analise.precificacaoTerreno.faixaValores != nil ? "Sim" : "Não")")
+                print("  - diferencaPercentual: \(analise.precificacaoTerreno.diferencaPercentual ?? "N/A")")
+
+                // Debug dados amostra
+                print("\n📋 DADOS AMOSTRA:")
+                if let dados = analise.dadosAmostra {
+                    print("  - Total de terrenos: \(dados.count)")
+                    if let primeiro = dados.first {
+                        print("  - Primeiro terreno:")
+                        print("    • Area: \(primeiro.Area ?? 0)")
+                        print("    • Bairro: \(primeiro.Bairro ?? "N/A")")
+                        print("    • preco_unitario: \(primeiro.preco_unitario ?? "N/A")")
+                        print("    • valorM2 (computed): \(primeiro.valorM2 ?? 0)")
+                    }
+                } else {
+                    print("  - Nenhum dado de amostra")
+                }
+            } else {
                 errorMessage = "Nenhuma análise encontrada"
             }
         } catch {

@@ -444,6 +444,10 @@ struct AnaliseTerreno: Identifiable, Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
+        // Debug: mostrar todas as chaves disponíveis
+        print("🔍 DEBUG AnaliseTerreno - Chaves disponíveis:")
+        print(container.allKeys.map { $0.stringValue })
+
         id = try? container.decode(String.self, forKey: .id)
         versao = try container.decode(String.self, forKey: .versao)
         status = try container.decode(String.self, forKey: .status)
@@ -470,14 +474,89 @@ struct AnaliseTerreno: Identifiable, Codable {
 }
 
 struct PrecificacaoTerreno: Codable {
-    let valorM2Estimado: Double?
-    let valorTotalEstimado: Double?
-    let faixaValores: FaixaValoresTerreno?
+    let areaTerreno: Double?
+    let bairroTerreno: String?
+    let precoAdotado: Double?
+    let precoEstimado: String? // Pode vir como string ou número
+    let precoTotalCalculado: Double?
+    let precoUnitarioAdotado: Double?
+    let precoUnitarioManual: Double?
+    let precoM2BaseBairro: String? // Pode vir como string ou número
+    let diferencaPercentual: String? // Pode vir como string ou número
+
+    // Computed properties para manter compatibilidade com a UI
+    var valorM2Estimado: Double? {
+        return precoUnitarioAdotado ?? precoUnitarioManual
+    }
+
+    var valorTotalEstimado: Double? {
+        return precoTotalCalculado ?? precoAdotado
+    }
+
+    var faixaValores: FaixaValoresTerreno? {
+        // Calcula faixa baseado na diferença percentual se existir
+        guard let total = valorTotalEstimado,
+              let percentualStr = diferencaPercentual,
+              let percentual = Double(percentualStr) else {
+            return nil
+        }
+
+        let variacao = total * (percentual / 100)
+        return FaixaValoresTerreno(
+            minimo: total - variacao,
+            maximo: total + variacao
+        )
+    }
 
     enum CodingKeys: String, CodingKey {
-        case valorM2Estimado = "valor_m2_estimado"
-        case valorTotalEstimado = "valor_total_estimado"
-        case faixaValores = "faixa_valores"
+        case areaTerreno = "area_terreno"
+        case bairroTerreno = "bairro_terreno"
+        case precoAdotado = "preco_adotado"
+        case precoEstimado = "preco_estimado"
+        case precoTotalCalculado = "preco_total_calculado"
+        case precoUnitarioAdotado = "preco_unitario_adotado"
+        case precoUnitarioManual = "preco_unitario_manual"
+        case precoM2BaseBairro = "preco_m2_base_bairro"
+        case diferencaPercentual = "diferenca_percentual"
+    }
+
+    // Custom decoder para lidar com campos que podem ser String ou Double
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        areaTerreno = try? container.decode(Double.self, forKey: .areaTerreno)
+        bairroTerreno = try? container.decode(String.self, forKey: .bairroTerreno)
+        precoAdotado = try? container.decode(Double.self, forKey: .precoAdotado)
+        precoTotalCalculado = try? container.decode(Double.self, forKey: .precoTotalCalculado)
+        precoUnitarioAdotado = try? container.decode(Double.self, forKey: .precoUnitarioAdotado)
+        precoUnitarioManual = try? container.decode(Double.self, forKey: .precoUnitarioManual)
+
+        // precoEstimado pode ser String ou Double
+        if let precoEstimadoStr = try? container.decode(String.self, forKey: .precoEstimado) {
+            precoEstimado = precoEstimadoStr
+        } else if let precoEstimadoNum = try? container.decode(Double.self, forKey: .precoEstimado) {
+            precoEstimado = String(precoEstimadoNum)
+        } else {
+            precoEstimado = nil
+        }
+
+        // precoM2BaseBairro pode ser String ou Double
+        if let precoM2Str = try? container.decode(String.self, forKey: .precoM2BaseBairro) {
+            precoM2BaseBairro = precoM2Str
+        } else if let precoM2Num = try? container.decode(Double.self, forKey: .precoM2BaseBairro) {
+            precoM2BaseBairro = String(precoM2Num)
+        } else {
+            precoM2BaseBairro = nil
+        }
+
+        // diferencaPercentual pode ser String ou Double
+        if let difStr = try? container.decode(String.self, forKey: .diferencaPercentual) {
+            diferencaPercentual = difStr
+        } else if let difNum = try? container.decode(Double.self, forKey: .diferencaPercentual) {
+            diferencaPercentual = String(difNum)
+        } else {
+            diferencaPercentual = nil
+        }
     }
 }
 
@@ -486,25 +565,33 @@ struct FaixaValoresTerreno: Codable {
     let maximo: Double
 }
 
-struct DadosAmostraTerreno: Codable {
-    let quantidadeTerrenos: Int?
-    let terrenosAnalisados: [TerrenoAnalisado]?
-
-    enum CodingKeys: String, CodingKey {
-        case quantidadeTerrenos = "quantidade_terrenos"
-        case terrenosAnalisados = "terrenos_analisados"
-    }
-}
+// dados_amostra é um array direto no Firestore
+typealias DadosAmostraTerreno = [TerrenoAnalisado]
 
 struct TerrenoAnalisado: Codable {
+    let Area: Double?
+    let Bairro: String?
+    let Latitude: String?
+    let Longitude: String?
+    let Link: String?
+    let Preco_venda: Double?
+    let Título: String?
+    let ano_consulta: Int?
+    let cidade: String?
+    let data_consulta: String?
+    let dia_consulta: Int?
     let endereco: String?
-    let areaM2: Double?
-    let valorM2: Double?
+    let mes_consulta: Int?
+    let preco_unitario: String? // Vem como string
+    let publicacao_dias: Int?
 
-    enum CodingKeys: String, CodingKey {
-        case endereco
-        case areaM2 = "area_m2"
-        case valorM2 = "valor_m2"
+    // Computed properties para compatibilidade com UI antiga
+    var areaM2: Double? { Area }
+    var valorM2: Double? {
+        if let precoStr = preco_unitario {
+            return Double(precoStr)
+        }
+        return nil
     }
 }
 

@@ -156,6 +156,18 @@ class FirestoreService {
             return nil
         }
 
+        // Debug: mostrar dados brutos do Firestore
+        print("🔍 DEBUG - Dados brutos do documento analise_terreno:")
+        let data = document.data()
+        if let precificacao = data["precificacao_terreno"] {
+            print("🔍 precificacao_terreno tipo: \(type(of: precificacao))")
+            print("🔍 precificacao_terreno valor: \(precificacao)")
+        }
+        if let dadosAmostra = data["dados_amostra"] {
+            print("🔍 dados_amostra tipo: \(type(of: dadosAmostra))")
+            print("🔍 dados_amostra valor: \(dadosAmostra)")
+        }
+
         var analise = try document.data(as: AnaliseTerreno.self)
         analise.id = document.documentID
         return analise
