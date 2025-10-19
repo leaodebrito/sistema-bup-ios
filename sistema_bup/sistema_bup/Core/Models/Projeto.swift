@@ -171,57 +171,70 @@ struct InfoCriacao: Codable {
 
 // MARK: - Análise de Espaço de Soluções
 struct AnaliseEspacoSolucoes: Identifiable, Codable {
-    @DocumentID var id: String? // versão: "1.0", "2.0", etc
-    let dataCriacao: Date
-    let metricasViabilidade: MetricasViabilidade
-    let estatisticasLucros: EstatisticasNumericas
+    var id: String? // versão: "1.0", "2.0", etc
+    let versao: String
+    let status: String
+    let dataCriacao: String
+    let infoCriacao: InfoCriacaoSubcollection?
     let estatisticasMargens: EstatisticasNumericas
+    let estatisticasLucros: EstatisticasLucrosDetalhadas
     let metricasCriterios: MetricasCriterios
-    let infoCriacao: InfoCriacaoAnalise
+    let metricasViabilidade: MetricasViabilidade
+    let distribuicoesValores: DistribuicoesValores?
 
     enum CodingKeys: String, CodingKey {
-        case id
+        case id = "_id"
+        case versao
+        case status
         case dataCriacao = "data_criacao"
-        case metricasViabilidade = "metricas_viabilidade"
-        case estatisticasLucros = "estatisticas_lucros"
-        case estatisticasMargens = "estatisticas_margens"
-        case metricasCriterios = "metricas_criterios"
         case infoCriacao = "info_criacao"
+        case estatisticasMargens = "estatisticas_margens"
+        case estatisticasLucros = "estatisticas_lucros"
+        case metricasCriterios = "metricas_criterios"
+        case metricasViabilidade = "metricas_viabilidade"
+        case distribuicoesValores = "distribuicoes_valores"
     }
+}
+
+struct EstatisticasNumericas: Codable {
+    let media: Double?
+    let mediana: Double?
+    let minima: Double?
+    let maxima: Double?
+
+    // Aliases para compatibilidade
+    var max: Double? { maxima }
+    var min: Double? { minima }
+}
+
+struct EstatisticasLucrosDetalhadas: Codable {
+    let medio: Double?
+    let mediano: Double?
+    let minimo: Double?
+    let maximo: Double?
 }
 
 struct MetricasViabilidade: Codable {
     let solucoesViaveis: Int
     let solucoesInviaveis: Int
-    let percentualViavel: Double
-    let lucroMedio: Double
+    let taxaViabilidade: Double?
 
     enum CodingKeys: String, CodingKey {
         case solucoesViaveis = "solucoes_viaveis"
         case solucoesInviaveis = "solucoes_inviaveis"
-        case percentualViavel = "percentual_viavel"
-        case lucroMedio = "lucro_medio"
+        case taxaViabilidade = "taxa_viabilidade"
     }
 }
 
-struct EstatisticasNumericas: Codable {
-    let max: Double
-    let min: Double
-    let media: Double
-    let mediana: Double
-}
-
 struct MetricasCriterios: Codable {
-    let margemMaior16: CriterioMetrica
-    let vagasSuficientes: CriterioMetrica
-    let areaPositiva: CriterioMetrica
     let todosCriterios: CriterioMetrica
+    let criterioMinimoUnidades: CriterioMetrica?
+    let criterioMargemMinima: CriterioMetrica?
 
     enum CodingKeys: String, CodingKey {
-        case margemMaior16 = "margem_maior_16"
-        case vagasSuficientes = "vagas_suficientes"
-        case areaPositiva = "area_positiva"
         case todosCriterios = "todos_criterios"
+        case criterioMinimoUnidades = "criterio_minimo_unidades"
+        case criterioMargemMinima = "criterio_margem_minima"
     }
 }
 
@@ -230,132 +243,325 @@ struct CriterioMetrica: Codable {
     let percentual: Double
 }
 
-struct InfoCriacaoAnalise: Codable {
-    let data: String
-    let usuario: String
-    let totalSolucoes: Int
+struct DistribuicoesValores: Codable {
+    let lucros: [Double]?
+    let margens: [Double]?
+    let vpls: [Double]?
+    let tirs: [Double]?
+}
+
+struct InfoCriacaoSubcollection: Codable {
+    let usuarioCriador: String
+    let dataCriacao: String
 
     enum CodingKeys: String, CodingKey {
-        case data
-        case usuario
-        case totalSolucoes = "total_solucoes"
+        case usuarioCriador = "usuario_criador"
+        case dataCriacao = "data_criacao"
     }
 }
 
 // MARK: - Análise de Mercado
 struct AnaliseMercado: Identifiable, Codable {
-    @DocumentID var id: String? // versão
-    let dataCriacao: Date
-    let precosImoveisRegiao: PrecosImoveisRegiao
-    let descricaoImoveisRegiao: DescricaoImoveisRegiao
+    var id: String? // versão
+    let versao: String
+    let status: String
+    let dataCriacao: String
+    let infoCriacao: InfoCriacaoSubcollection?
     let precificacaoImovel: PrecificacaoImovel
+    let dadosImoveisRegiao: DadosImoveisRegiao?
+    let precosImoveisRegiao: PrecosImoveisRegiao?
+    let descricaoImoveisRegiao: DescricaoImoveisRegiao?
+    let conclusoesEstudo: ConcluxaoEstudoMercado?
 
     enum CodingKeys: String, CodingKey {
-        case id
+        case id = "_id"
+        case versao
+        case status
         case dataCriacao = "data_criacao"
+        case infoCriacao = "info_criacao"
+        case precificacaoImovel = "precificacao_imovel"
+        case dadosImoveisRegiao = "dados_imoveis_regiao"
         case precosImoveisRegiao = "precos_imoveis_regiao"
         case descricaoImoveisRegiao = "descricao_imoveis_regiao"
-        case precificacaoImovel = "precificacao_imovel"
+        case conclusoesEstudo = "conclusoes_estudo"
+    }
+}
+
+struct PrecificacaoImovel: Codable {
+    let faixaPrecoM2: FaixaPreco?
+    let valorReferenciaM2: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case faixaPrecoM2 = "faixa_preco_m2"
+        case valorReferenciaM2 = "valor_referencia_m2"
+    }
+}
+
+struct FaixaPreco: Codable {
+    let minimo: Double
+    let medio: Double
+    let maximo: Double
+}
+
+struct DadosImoveisRegiao: Codable {
+    let quantidadeTotal: Int?
+    let imoveisAnalisados: [ImovelAnalisado]?
+
+    enum CodingKeys: String, CodingKey {
+        case quantidadeTotal = "quantidade_total"
+        case imoveisAnalisados = "imoveis_analisados"
+    }
+}
+
+struct ImovelAnalisado: Codable {
+    let endereco: String?
+    let areaM2: Double?
+    let quartos: Int?
+    let precoM2: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case endereco
+        case areaM2 = "area_m2"
+        case quartos
+        case precoM2 = "preco_m2"
     }
 }
 
 struct PrecosImoveisRegiao: Codable {
-    let valorMediaBairro: Double
-    let valorMediaCidade: Double
-    let htmlMapaCalor: String?
+    let precoMedioM2: Double?
+    let distribuicaoPrecos: [Double]?
 
     enum CodingKeys: String, CodingKey {
-        case valorMediaBairro = "valor_media_bairro"
-        case valorMediaCidade = "valor_media_cidade"
-        case htmlMapaCalor = "html_mapa_calor"
+        case precoMedioM2 = "preco_medio_m2"
+        case distribuicaoPrecos = "distribuicao_precos"
     }
 }
 
 struct DescricaoImoveisRegiao: Codable {
-    // Distribuições (pode ser expandido conforme necessário)
-}
-
-struct PrecificacaoImovel: Codable {
-    let valorUnitarioEstimado: Double
-    let valorVendaEstimado: Double
+    let tipoPredominante: String?
+    let areaMediaM2: Double?
+    let quartosMedio: Double?
 
     enum CodingKeys: String, CodingKey {
-        case valorUnitarioEstimado = "valor_unitario_estimado"
-        case valorVendaEstimado = "valor_venda_estimado"
+        case tipoPredominante = "tipo_predominante"
+        case areaMediaM2 = "area_media_m2"
+        case quartosMedio = "quartos_medio"
+    }
+}
+
+struct ConcluxaoEstudoMercado: Codable {
+    let demandaAlta: Bool?
+    let competitividade: String?
+    let recomendacao: String?
+
+    enum CodingKeys: String, CodingKey {
+        case demandaAlta = "demanda_alta"
+        case competitividade
+        case recomendacao
     }
 }
 
 // MARK: - Análise de Terreno
 struct AnaliseTerreno: Identifiable, Codable {
-    @DocumentID var id: String? // versão
-    let dataCriacao: Date
-    let descricao: String
-    let parecerEstudo: String
+    var id: String? // versão
+    let versao: String
+    let status: String
+    let dataCriacao: String
+    let infoCriacao: InfoCriacaoSubcollection?
     let precificacaoTerreno: PrecificacaoTerreno
+    let dadosAmostra: DadosAmostraTerreno?
+    let estatisticasPorBairro: [String: EstatisticaBairro]?
+    let parecerEstudo: ParecerEstudo?
+    let metadados: MetadadosTerreno?
+    let descricao: String?
 
     enum CodingKeys: String, CodingKey {
-        case id
+        case id = "_id"
+        case versao
+        case status
         case dataCriacao = "data_criacao"
-        case descricao
-        case parecerEstudo = "parecer_estudo"
+        case infoCriacao = "info_criacao"
         case precificacaoTerreno = "precificacao_terreno"
+        case dadosAmostra = "dados_amostra"
+        case estatisticasPorBairro = "estatisticas_por_bairro"
+        case parecerEstudo = "parecer_estudo"
+        case metadados
+        case descricao
     }
 }
 
 struct PrecificacaoTerreno: Codable {
-    let areaTerreno: Double
-    let precoAdotado: Double
-    let precoUnitarioAdotado: Double
+    let valorM2Estimado: Double?
+    let valorTotalEstimado: Double?
+    let faixaValores: FaixaValoresTerreno?
 
     enum CodingKeys: String, CodingKey {
-        case areaTerreno = "area_terreno"
-        case precoAdotado = "preco_adotado"
-        case precoUnitarioAdotado = "preco_unitario_adotado"
+        case valorM2Estimado = "valor_m2_estimado"
+        case valorTotalEstimado = "valor_total_estimado"
+        case faixaValores = "faixa_valores"
+    }
+}
+
+struct FaixaValoresTerreno: Codable {
+    let minimo: Double
+    let maximo: Double
+}
+
+struct DadosAmostraTerreno: Codable {
+    let quantidadeTerrenos: Int?
+    let terrenosAnalisados: [TerrenoAnalisado]?
+
+    enum CodingKeys: String, CodingKey {
+        case quantidadeTerrenos = "quantidade_terrenos"
+        case terrenosAnalisados = "terrenos_analisados"
+    }
+}
+
+struct TerrenoAnalisado: Codable {
+    let endereco: String?
+    let areaM2: Double?
+    let valorM2: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case endereco
+        case areaM2 = "area_m2"
+        case valorM2 = "valor_m2"
+    }
+}
+
+struct EstatisticaBairro: Codable {
+    let valorMedioM2: Double?
+    let quantidadeAmostras: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case valorMedioM2 = "valor_medio_m2"
+        case quantidadeAmostras = "quantidade_amostras"
+    }
+}
+
+struct ParecerEstudo: Codable {
+    let confiabilidade: String?
+    let observacoes: String?
+}
+
+struct MetadadosTerreno: Codable {
+    let fonteDados: String?
+    let dataColeta: String?
+
+    enum CodingKeys: String, CodingKey {
+        case fonteDados = "fonte_dados"
+        case dataColeta = "data_coleta"
     }
 }
 
 // MARK: - Análise de Viabilidade
 struct AnaliseViabilidade: Identifiable, Codable {
-    @DocumentID var id: String? // versão
+    var id: String? // versão
+    let versao: String
+    let status: String
     let dataCriacao: String
-    let parecerViabilidade: ParecerViabilidade
-    let parecerInfo: ParecerInfo
-    let solucoesViaveis: [String: SolucaoViavel]? // Top 100 soluções
+    let infoCriacao: InfoCriacaoSubcollection?
+    let quantidadeSolucoesAvaliadas: Int?
+    let quantidadeSolucoesViaveis: Int?
+    let visaoGeral: VisaoGeralViabilidade?
+    let solucoesViaveis: [SolucaoViavel]?
+    let parecerViabilidade: ParecerViabilidadeDetalhado?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case versao
+        case status
+        case dataCriacao = "data_criacao"
+        case infoCriacao = "info_criacao"
+        case quantidadeSolucoesAvaliadas = "quantidade_solucoes_avaliadas"
+        case quantidadeSolucoesViaveis = "quantidade_solucoes_viaveis"
+        case visaoGeral = "visao_geral"
+        case solucoesViaveis = "solucoes_viaveis"
+        case parecerViabilidade = "parecer_viabilidade"
+    }
+}
+
+struct VisaoGeralViabilidade: Codable {
+    let melhorSolucao: ResumoSolucao?
+    let solucaoMediana: ResumoSolucao?
+
+    enum CodingKeys: String, CodingKey {
+        case melhorSolucao = "melhor_solucao"
+        case solucaoMediana = "solucao_mediana"
+    }
+}
+
+struct ResumoSolucao: Codable {
+    let id: String
+    let lucro: Double?
+    let margem: Double?
+    let vpl: Double?
+    let tir: Double?
+}
+
+struct SolucaoViavel: Codable, Identifiable {
+    let id: String
+    let configuracao: ConfiguracaoSolucao?
+    let metricasEconomicas: MetricasEconomicas?
+    let atendeCriterios: Bool?
 
     enum CodingKeys: String, CodingKey {
         case id
-        case dataCriacao = "data_criacao"
-        case parecerViabilidade = "parecer_viabilidade"
-        case parecerInfo = "parecer_info"
-        case solucoesViaveis = "solucoes_viaveis"
+        case configuracao
+        case metricasEconomicas = "metricas_economicas"
+        case atendeCriterios = "atende_criterios"
     }
 }
 
-struct ParecerViabilidade: Codable {
-    let parecer: String
-}
-
-struct ParecerInfo: Codable {
-    let solucaoEscolhida: String
-    let quantidadeSolucoesViaveis: Int
+struct ConfiguracaoSolucao: Codable {
+    let numPavimentos: Int?
+    let unidadesPorPavimento: Int?
+    let totalUnidades: Int?
+    let areaUtilUnidade: Double?
+    let quartos: Int?
+    let suites: Int?
+    let vagasGaragem: Int?
 
     enum CodingKeys: String, CodingKey {
-        case solucaoEscolhida = "solucao_escolhida"
-        case quantidadeSolucoesViaveis = "quantidade_solucoes_viaveis"
+        case numPavimentos = "num_pavimentos"
+        case unidadesPorPavimento = "unidades_por_pavimento"
+        case totalUnidades = "total_unidades"
+        case areaUtilUnidade = "area_util_unidade"
+        case quartos
+        case suites
+        case vagasGaragem = "vagas_garagem"
     }
 }
 
-struct SolucaoViavel: Codable {
-    // ~100 campos conforme documentação
-    // Pode ser expandido conforme necessário
-    let receita: Double?
-    let custoTotalEmpreendimento: Double?
-    let lucroIncorporacao: Double?
+struct MetricasEconomicas: Codable {
+    let vgv: Double?
+    let custoTotal: Double?
+    let lucro: Double?
+    let margem: Double?
+    let vpl: Double?
+    let tir: Double?
+    let paybackAnos: Double?
 
     enum CodingKeys: String, CodingKey {
-        case receita
-        case custoTotalEmpreendimento = "custo_total_empreendimento"
-        case lucroIncorporacao = "lucro_incorporacao"
+        case vgv
+        case custoTotal = "custo_total"
+        case lucro
+        case margem
+        case vpl
+        case tir
+        case paybackAnos = "payback_anos"
+    }
+}
+
+struct ParecerViabilidadeDetalhado: Codable {
+    let viavel: Bool?
+    let nivelRisco: String?
+    let recomendacao: String?
+
+    enum CodingKeys: String, CodingKey {
+        case viavel
+        case nivelRisco = "nivel_risco"
+        case recomendacao
     }
 }
 
