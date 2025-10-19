@@ -194,6 +194,32 @@ struct AnaliseEspacoSolucoes: Identifiable, Codable {
         case metricasViabilidade = "metricas_viabilidade"
         case distribuicoesValores = "distribuicoes_valores"
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try? container.decode(String.self, forKey: .id)
+        versao = try container.decode(String.self, forKey: .versao)
+        status = try container.decode(String.self, forKey: .status)
+
+        // Tenta decodificar data_criacao como String ou Timestamp
+        if let dateString = try? container.decode(String.self, forKey: .dataCriacao) {
+            dataCriacao = dateString
+        } else if let timestamp = try? container.decode(FirebaseFirestore.Timestamp.self, forKey: .dataCriacao) {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            dataCriacao = dateFormatter.string(from: timestamp.dateValue())
+        } else {
+            dataCriacao = ""
+        }
+
+        infoCriacao = try? container.decode(InfoCriacaoSubcollection.self, forKey: .infoCriacao)
+        estatisticasMargens = try container.decode(EstatisticasNumericas.self, forKey: .estatisticasMargens)
+        estatisticasLucros = try container.decode(EstatisticasLucrosDetalhadas.self, forKey: .estatisticasLucros)
+        metricasCriterios = try container.decode(MetricasCriterios.self, forKey: .metricasCriterios)
+        metricasViabilidade = try container.decode(MetricasViabilidade.self, forKey: .metricasViabilidade)
+        distribuicoesValores = try? container.decode(DistribuicoesValores.self, forKey: .distribuicoesValores)
+    }
 }
 
 struct EstatisticasNumericas: Codable {
@@ -284,6 +310,32 @@ struct AnaliseMercado: Identifiable, Codable {
         case precosImoveisRegiao = "precos_imoveis_regiao"
         case descricaoImoveisRegiao = "descricao_imoveis_regiao"
         case conclusoesEstudo = "conclusoes_estudo"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try? container.decode(String.self, forKey: .id)
+        versao = try container.decode(String.self, forKey: .versao)
+        status = try container.decode(String.self, forKey: .status)
+
+        // Tenta decodificar data_criacao como String ou Timestamp
+        if let dateString = try? container.decode(String.self, forKey: .dataCriacao) {
+            dataCriacao = dateString
+        } else if let timestamp = try? container.decode(FirebaseFirestore.Timestamp.self, forKey: .dataCriacao) {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            dataCriacao = dateFormatter.string(from: timestamp.dateValue())
+        } else {
+            dataCriacao = ""
+        }
+
+        infoCriacao = try? container.decode(InfoCriacaoSubcollection.self, forKey: .infoCriacao)
+        precificacaoImovel = try container.decode(PrecificacaoImovel.self, forKey: .precificacaoImovel)
+        dadosImoveisRegiao = try? container.decode(DadosImoveisRegiao.self, forKey: .dadosImoveisRegiao)
+        precosImoveisRegiao = try? container.decode(PrecosImoveisRegiao.self, forKey: .precosImoveisRegiao)
+        descricaoImoveisRegiao = try? container.decode(DescricaoImoveisRegiao.self, forKey: .descricaoImoveisRegiao)
+        conclusoesEstudo = try? container.decode(ConcluxaoEstudoMercado.self, forKey: .conclusoesEstudo)
     }
 }
 
@@ -388,6 +440,33 @@ struct AnaliseTerreno: Identifiable, Codable {
         case metadados
         case descricao
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try? container.decode(String.self, forKey: .id)
+        versao = try container.decode(String.self, forKey: .versao)
+        status = try container.decode(String.self, forKey: .status)
+
+        // Tenta decodificar data_criacao como String ou Timestamp
+        if let dateString = try? container.decode(String.self, forKey: .dataCriacao) {
+            dataCriacao = dateString
+        } else if let timestamp = try? container.decode(FirebaseFirestore.Timestamp.self, forKey: .dataCriacao) {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            dataCriacao = dateFormatter.string(from: timestamp.dateValue())
+        } else {
+            dataCriacao = ""
+        }
+
+        infoCriacao = try? container.decode(InfoCriacaoSubcollection.self, forKey: .infoCriacao)
+        precificacaoTerreno = try container.decode(PrecificacaoTerreno.self, forKey: .precificacaoTerreno)
+        dadosAmostra = try? container.decode(DadosAmostraTerreno.self, forKey: .dadosAmostra)
+        estatisticasPorBairro = try? container.decode([String: EstatisticaBairro].self, forKey: .estatisticasPorBairro)
+        parecerEstudo = try? container.decode(ParecerEstudo.self, forKey: .parecerEstudo)
+        metadados = try? container.decode(MetadadosTerreno.self, forKey: .metadados)
+        descricao = try? container.decode(String.self, forKey: .descricao)
+    }
 }
 
 struct PrecificacaoTerreno: Codable {
@@ -478,6 +557,32 @@ struct AnaliseViabilidade: Identifiable, Codable {
         case visaoGeral = "visao_geral"
         case solucoesViaveis = "solucoes_viaveis"
         case parecerViabilidade = "parecer_viabilidade"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try? container.decode(String.self, forKey: .id)
+        versao = try container.decode(String.self, forKey: .versao)
+        status = try container.decode(String.self, forKey: .status)
+
+        // Tenta decodificar data_criacao como String ou Timestamp
+        if let dateString = try? container.decode(String.self, forKey: .dataCriacao) {
+            dataCriacao = dateString
+        } else if let timestamp = try? container.decode(FirebaseFirestore.Timestamp.self, forKey: .dataCriacao) {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            dataCriacao = dateFormatter.string(from: timestamp.dateValue())
+        } else {
+            dataCriacao = ""
+        }
+
+        infoCriacao = try? container.decode(InfoCriacaoSubcollection.self, forKey: .infoCriacao)
+        quantidadeSolucoesAvaliadas = try? container.decode(Int.self, forKey: .quantidadeSolucoesAvaliadas)
+        quantidadeSolucoesViaveis = try? container.decode(Int.self, forKey: .quantidadeSolucoesViaveis)
+        visaoGeral = try? container.decode(VisaoGeralViabilidade.self, forKey: .visaoGeral)
+        solucoesViaveis = try? container.decode([SolucaoViavel].self, forKey: .solucoesViaveis)
+        parecerViabilidade = try? container.decode(ParecerViabilidadeDetalhado.self, forKey: .parecerViabilidade)
     }
 }
 
