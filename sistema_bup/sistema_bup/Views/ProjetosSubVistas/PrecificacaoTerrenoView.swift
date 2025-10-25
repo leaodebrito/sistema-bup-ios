@@ -37,11 +37,6 @@ struct PrecificacaoTerrenoView: View {
                             dadosAmostraCard(dados: dadosAmostra)
                         }
 
-                        // Estatísticas por Bairro
-                        if let estatisticas = analise.estatisticasPorBairro, !estatisticas.isEmpty {
-                            estatisticasBairroCard(estatisticas: estatisticas)
-                        }
-
                         // Parecer do Estudo
                         if let parecer = analise.parecerEstudo {
                             parecerCard(parecer: parecer)
@@ -168,26 +163,6 @@ struct PrecificacaoTerrenoView: View {
                         icon: "square.grid.3x3.fill"
                     )
                 }
-
-                // Cálculo baseado na área (se disponível)
-                if let area = projeto.areaTerreno,
-                   let valorM2 = analise.precificacaoTerreno.valorM2Estimado {
-                    Divider()
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Cálculo:")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text("\(formatarNumero(area)) m² × \(formatarMoeda(valorM2))/m²")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                // Faixa de Valores
-                if let faixa = analise.precificacaoTerreno.faixaValores {
-                    Divider()
-                    faixaValoresView(faixa: faixa)
-                }
             }
             .padding()
             .background(Color(.systemBackground))
@@ -239,47 +214,7 @@ struct PrecificacaoTerrenoView: View {
         }
     }
 
-    // MARK: - Faixa Valores View
 
-    private func faixaValoresView(faixa: FaixaValoresTerreno) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "arrow.up.arrow.down")
-                    .foregroundColor(.green)
-                    .frame(width: 24)
-                Text("Faixa de Valores")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Mínimo")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(formatarMoeda(faixa.minimo))
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.orange)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("Máximo")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(formatarMoeda(faixa.maximo))
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.green)
-                }
-            }
-            .padding()
-            .background(Color.gray.opacity(0.05))
-            .cornerRadius(8)
-        }
-    }
 
     // MARK: - Dados Amostra Card
 
@@ -376,67 +311,6 @@ struct PrecificacaoTerrenoView: View {
         .padding()
         .background(Color.blue.opacity(0.05))
         .cornerRadius(8)
-    }
-
-    // MARK: - Estatísticas Bairro Card
-
-    private func estatisticasBairroCard(estatisticas: [String: EstatisticaBairro]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "map.fill")
-                    .foregroundColor(.orange)
-                Text("Estatísticas por Região")
-                    .font(.headline)
-            }
-
-            VStack(spacing: 12) {
-                ForEach(Array(estatisticas.keys.sorted()), id: \.self) { bairro in
-                    if let stats = estatisticas[bairro] {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(bairro)
-                                .font(.subheadline)
-                                .fontWeight(.bold)
-                                .foregroundColor(.primary)
-
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Valor Médio/m²")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                    if let valorMedio = stats.valorMedioM2 {
-                                        Text(formatarMoeda(valorMedio))
-                                            .font(.body)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.orange)
-                                    }
-                                }
-
-                                Spacer()
-
-                                VStack(alignment: .trailing, spacing: 4) {
-                                    Text("Amostras")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                    if let quantidade = stats.quantidadeAmostras {
-                                        Text("\(quantidade)")
-                                            .font(.body)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.blue)
-                                    }
-                                }
-                            }
-                        }
-                        .padding()
-                        .background(Color.orange.opacity(0.05))
-                        .cornerRadius(8)
-                    }
-                }
-            }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-        }
     }
 
     // MARK: - Parecer Card
