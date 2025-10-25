@@ -222,6 +222,36 @@ class FirestoreService {
             return nil
         }
 
+        // Debug: mostrar dados brutos do Firestore
+        print("🔍 DEBUG - Dados brutos do documento analise_mercado:")
+        let data = document.data()
+        print("🔍 Chaves disponíveis: \(data.keys)")
+
+        if let precificacao = data["precificacao_imovel"] {
+            print("🔍 precificacao_imovel tipo: \(type(of: precificacao))")
+            print("🔍 precificacao_imovel valor: \(precificacao)")
+        }
+
+        if let dadosImoveis = data["dados_imoveis_regiao"] {
+            print("🔍 dados_imoveis_regiao tipo: \(type(of: dadosImoveis))")
+            print("🔍 dados_imoveis_regiao valor: \(dadosImoveis)")
+        }
+
+        if let precos = data["precos_imoveis_regiao"] {
+            print("🔍 precos_imoveis_regiao tipo: \(type(of: precos))")
+            print("🔍 precos_imoveis_regiao valor: \(precos)")
+        }
+
+        if let descricao = data["descricao_imoveis_regiao"] {
+            print("🔍 descricao_imoveis_regiao tipo: \(type(of: descricao))")
+            print("🔍 descricao_imoveis_regiao valor: \(descricao)")
+        }
+
+        if let conclusoes = data["conclusoes_estudo"] {
+            print("🔍 conclusoes_estudo tipo: \(type(of: conclusoes))")
+            print("🔍 conclusoes_estudo valor: \(conclusoes)")
+        }
+
         var analise = try document.data(as: AnaliseMercado.self)
         analise.id = document.documentID
         return analise

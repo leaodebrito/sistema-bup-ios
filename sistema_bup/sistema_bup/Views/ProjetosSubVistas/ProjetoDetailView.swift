@@ -73,33 +73,7 @@ struct ProjetoDetailView: View {
 
 
 // MARK: - Análise de Mercado View
-struct AnaliseMercadoView: View {
-    let projeto: Projeto
 
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 60, height: 60)
-                    .foregroundColor(.green)
-
-                Text("Análise de Mercado")
-                    .font(.title2)
-                    .fontWeight(.bold)
-
-                Text("Análise de mercado em desenvolvimento")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding()
-        }
-    }
-}
 
 // MARK: - Viabilidade View
 struct ViabilidadeView: View {

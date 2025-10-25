@@ -299,6 +299,19 @@ struct AnaliseMercado: Identifiable, Codable {
     let descricaoImoveisRegiao: DescricaoImoveisRegiao?
     let conclusoesEstudo: ConcluxaoEstudoMercado?
 
+    // Computed property para obter o valor de referência do m² das conclusões se a precificação estiver zerada
+    var valorReferenciaM2Calculado: Double? {
+        if let valor = precificacaoImovel.valorReferenciaM2, valor > 0 {
+            return valor
+        }
+        // Se não houver na precificação, tenta pegar das conclusões
+        if let precoStr = conclusoesEstudo?.precoUnitarioVendaAdotado,
+           let preco = Double(precoStr) {
+            return preco
+        }
+        return nil
+    }
+
     enum CodingKeys: String, CodingKey {
         case id = "_id"
         case versao
@@ -340,12 +353,82 @@ struct AnaliseMercado: Identifiable, Codable {
 }
 
 struct PrecificacaoImovel: Codable {
-    let faixaPrecoM2: FaixaPreco?
-    let valorReferenciaM2: Double?
+    let area: Double?
+    let banheiros: Int?
+    let cidade: String?
+    let garagem: Int?
+    let idadeImovel: Int?
+    let latitude: String?
+    let longitude: String?
+    let qualidadeImovel: Int?
+    let quartos: Int?
+    let tipo: String?
+    let valorUnitarioEstimado: Double?
+    let valorVendaEstimado: Double?
+
+    // Computed properties para compatibilidade com a UI
+    var valorReferenciaM2: Double? {
+        return valorUnitarioEstimado
+    }
+
+    var faixaPrecoM2: FaixaPreco? {
+        // Se houver valor estimado, cria uma faixa com +/- 10%
+        guard let valor = valorUnitarioEstimado, valor > 0 else { return nil }
+        let variacao = valor * 0.1
+        return FaixaPreco(
+            minimo: valor - variacao,
+            medio: valor,
+            maximo: valor + variacao
+        )
+    }
 
     enum CodingKeys: String, CodingKey {
-        case faixaPrecoM2 = "faixa_preco_m2"
-        case valorReferenciaM2 = "valor_referencia_m2"
+        case area
+        case banheiros
+        case cidade
+        case garagem
+        case idadeImovel = "idade_imovel"
+        case latitude
+        case longitude
+        case qualidadeImovel = "qualidade_imovel"
+        case quartos
+        case tipo
+        case valorUnitarioEstimado = "valor_unitario_estimado"
+        case valorVendaEstimado = "valor_venda_estimado"
+    }
+
+    // Custom decoder para lidar com latitude/longitude que podem ser String ou Double
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        area = try? container.decode(Double.self, forKey: .area)
+        banheiros = try? container.decode(Int.self, forKey: .banheiros)
+        cidade = try? container.decode(String.self, forKey: .cidade)
+        garagem = try? container.decode(Int.self, forKey: .garagem)
+        idadeImovel = try? container.decode(Int.self, forKey: .idadeImovel)
+        qualidadeImovel = try? container.decode(Int.self, forKey: .qualidadeImovel)
+        quartos = try? container.decode(Int.self, forKey: .quartos)
+        tipo = try? container.decode(String.self, forKey: .tipo)
+        valorUnitarioEstimado = try? container.decode(Double.self, forKey: .valorUnitarioEstimado)
+        valorVendaEstimado = try? container.decode(Double.self, forKey: .valorVendaEstimado)
+
+        // Latitude pode ser String ou Double
+        if let latStr = try? container.decode(String.self, forKey: .latitude) {
+            latitude = latStr
+        } else if let latNum = try? container.decode(Double.self, forKey: .latitude) {
+            latitude = String(latNum)
+        } else {
+            latitude = nil
+        }
+
+        // Longitude pode ser String ou Double
+        if let lonStr = try? container.decode(String.self, forKey: .longitude) {
+            longitude = lonStr
+        } else if let lonNum = try? container.decode(Double.self, forKey: .longitude) {
+            longitude = String(lonNum)
+        } else {
+            longitude = nil
+        }
     }
 }
 
@@ -356,36 +439,103 @@ struct FaixaPreco: Codable {
 }
 
 struct DadosImoveisRegiao: Codable {
-    let quantidadeTotal: Int?
-    let imoveisAnalisados: [ImovelAnalisado]?
+    let imoveis: [ImovelAnalisado]?
+    let metadados: MetadadosImoveis?
+
+    // Computed property para compatibilidade
+    var quantidadeTotal: Int? {
+        return metadados?.totalImoveis
+    }
+
+    var imoveisAnalisados: [ImovelAnalisado]? {
+        return imoveis
+    }
 
     enum CodingKeys: String, CodingKey {
-        case quantidadeTotal = "quantidade_total"
-        case imoveisAnalisados = "imoveis_analisados"
+        case imoveis
+        case metadados
+    }
+}
+
+struct MetadadosImoveis: Codable {
+    let colunasIncluidas: [String]?
+    let dataProcessamento: String?
+    let totalImoveis: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case colunasIncluidas = "colunas_incluidas"
+        case dataProcessamento = "data_processamento"
+        case totalImoveis = "total_imoveis"
     }
 }
 
 struct ImovelAnalisado: Codable {
-    let endereco: String?
-    let areaM2: Double?
-    let quartos: Int?
-    let precoM2: Double?
+    let Area: Double?
+    let Bairro: String?
+    let Banheiro: Int?
+    let Cidade: String?
+    let Endereco: String?
+    let Idade: String? // Pode ser "nan" ou número
+    let Latitude: String?
+    let Longitude: String?
+    let Preco_venda: Double?
+    let Quartos: Int?
+    let Suites: Int?
+    let Vaga: Int?
+    let preco_unitario: String?
 
-    enum CodingKeys: String, CodingKey {
-        case endereco
-        case areaM2 = "area_m2"
-        case quartos
-        case precoM2 = "preco_m2"
+    // Computed properties para compatibilidade com a UI
+    var endereco: String? { Endereco }
+    var areaM2: Double? { Area }
+    var quartos: Int? { Quartos }
+    var precoM2: Double? {
+        guard let precoStr = preco_unitario else { return nil }
+        return Double(precoStr)
+    }
+
+    // Custom decoder para lidar com "nan" em Idade
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        Area = try? container.decode(Double.self, forKey: .Area)
+        Bairro = try? container.decode(String.self, forKey: .Bairro)
+        Banheiro = try? container.decode(Int.self, forKey: .Banheiro)
+        Cidade = try? container.decode(String.self, forKey: .Cidade)
+        Endereco = try? container.decode(String.self, forKey: .Endereco)
+        Latitude = try? container.decode(String.self, forKey: .Latitude)
+        Longitude = try? container.decode(String.self, forKey: .Longitude)
+        Preco_venda = try? container.decode(Double.self, forKey: .Preco_venda)
+        Quartos = try? container.decode(Int.self, forKey: .Quartos)
+        Suites = try? container.decode(Int.self, forKey: .Suites)
+        Vaga = try? container.decode(Int.self, forKey: .Vaga)
+        preco_unitario = try? container.decode(String.self, forKey: .preco_unitario)
+
+        // Idade pode ser "nan" ou número
+        if let idadeInt = try? container.decode(Int.self, forKey: .Idade) {
+            Idade = String(idadeInt)
+        } else if let idadeStr = try? container.decode(String.self, forKey: .Idade) {
+            Idade = idadeStr
+        } else {
+            Idade = nil
+        }
     }
 }
 
 struct PrecosImoveisRegiao: Codable {
-    let precoMedioM2: Double?
-    let distribuicaoPrecos: [Double]?
+    let bairrosAnalisados: [String]?
+    // Pode ter outros campos futuramente
+
+    // Computed property - por enquanto retorna nil pois não vem do Firestore
+    var precoMedioM2: Double? {
+        return nil
+    }
+
+    var distribuicaoPrecos: [Double]? {
+        return nil
+    }
 
     enum CodingKeys: String, CodingKey {
-        case precoMedioM2 = "preco_medio_m2"
-        case distribuicaoPrecos = "distribuicao_precos"
+        case bairrosAnalisados = "bairros_analisados"
     }
 }
 
@@ -402,14 +552,33 @@ struct DescricaoImoveisRegiao: Codable {
 }
 
 struct ConcluxaoEstudoMercado: Codable {
-    let demandaAlta: Bool?
-    let competitividade: String?
-    let recomendacao: String?
+    let dataAtualizacaoParecer: String?
+    let parecerEstudo: String?
+    let precoUnitarioVendaAdotado: String?
+    let precoVendaAdotado: String?
+    let usuarioAtualizacaoParecer: String?
+
+    // Computed properties para compatibilidade com a UI antiga
+    var demandaAlta: Bool? {
+        // Analisa o parecer para determinar se menciona demanda alta
+        guard let parecer = parecerEstudo?.lowercased() else { return nil }
+        return parecer.contains("demanda alta") || parecer.contains("alta demanda")
+    }
+
+    var competitividade: String? {
+        return parecerEstudo
+    }
+
+    var recomendacao: String? {
+        return parecerEstudo
+    }
 
     enum CodingKeys: String, CodingKey {
-        case demandaAlta = "demanda_alta"
-        case competitividade
-        case recomendacao
+        case dataAtualizacaoParecer = "data_atualizacao_parecer"
+        case parecerEstudo = "parecer_estudo"
+        case precoUnitarioVendaAdotado = "preco_unitario_venda_adotado"
+        case precoVendaAdotado = "preco_venda_adotado"
+        case usuarioAtualizacaoParecer = "usuario_atualizacao_parecer"
     }
 }
 
